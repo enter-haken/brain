@@ -140,6 +140,19 @@ Generated escript brain with MIX_ENV=dev
 warning: escript "brain" overrides executable "/home/gooose/src/project/brain/brain" already in your PATH
 ```
 
+## Configure
+
+Currently the [config.ex](config/config.exs) file is used to configure the `brain`
+
+```
+config :brain,
+  memory_paths: ["priv/memories/"]
+```
+
+All given paths will be merged.
+So you can add for example a path for private stuff as well as work related stuff.
+You can also link memories between the different locations.
+
 ## Contact
 
 Jan Frederik Hake, <jan_hake@gmx.de>. [@enter_haken](https://twitter.com/enter_haken) on Twitter.

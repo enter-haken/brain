@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :brain,
-  memory_path: "priv/memories/"
+  memory_paths: ["priv/memories/"]
 
 config :logger,
   level: :debug
