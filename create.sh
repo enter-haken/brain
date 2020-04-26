@@ -1,5 +1,5 @@
 #!/bin/bash
 echo "\`\`\`"
-echo "id: $(uuid)"
+echo "id: $(cat /proc/sys/kernel/random/uuid)"
 echo "title: $1"
 echo "\`\`\`"

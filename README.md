@@ -153,6 +153,16 @@ All given paths will be merged.
 So you can add for example a path for private stuff as well as work related stuff.
 You can also link memories between the different locations.
 
+## idea 
+
+As a normal brain you can add something like `short time memory`, 
+where you can only acces things not older than a year.
+This prevents poluting the whole graph, where you can see nothing.
+
+This is like the real world. 
+When you are trying to remember a more general thing, you get too much infomation.
+You only get the `best connected` or the newest memories.
+
 ## Contact
 
 Jan Frederik Hake, <jan_hake@gmx.de>. [@enter_haken](https://twitter.com/enter_haken) on Twitter.
