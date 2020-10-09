@@ -61,6 +61,10 @@ defmodule Brain do
   defp execute(%{search: search}) do
     all_memories = get_all_memories()
 
+    # TODO:
+    # markdown to ast
+    # |> exclude urls from "fulltext search"
+
     found_memories =
       all_memories
       |> Enum.filter(fn memory ->
