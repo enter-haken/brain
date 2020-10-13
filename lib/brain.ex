@@ -4,8 +4,8 @@ defmodule Brain do
   alias Brain.Memory
   alias Brain.Memory.Meta
   alias Brain.Link
-
-  # import Brain.Helper
+  alias Brain.Graph
+  alias Brain.Persist
 
   def main(args) do
     {parsed_args, _, _} =
@@ -14,7 +14,8 @@ defmodule Brain do
         strict: [
           search: :string,
           tag: :string,
-          all: :boolean
+          all: :boolean,
+          ast: :boolean
         ]
       )
 
@@ -24,17 +25,21 @@ defmodule Brain do
     |> IO.puts()
   end
 
-  defp execute(%{all: true}) do
-    all_memories = get_all_memories()
+  defp execute(%{ast: true}) do
+    inspect(Persist.get_all_memories(), pretty: true)
+  end
 
-    to_graph(
+  defp execute(%{all: true}) do
+    all_memories = Persist.get_all_memories()
+
+    Graph.get(
       all_memories,
-      all_memories |> get_links()
+      all_memories |> Link.get()
     )
   end
 
   defp execute(%{tag: tag}) do
-    all_memories = get_all_memories()
+    all_memories = Persist.get_all_memories()
 
     found_memories =
       all_memories
@@ -45,21 +50,21 @@ defmodule Brain do
 
     linked_memories =
       found_memories
-      |> get_links()
+      |> Link.get()
       |> Enum.map(fn %Link{target_id: target_id} ->
         all_memories
         |> Enum.find(fn %Memory{meta: %Meta{id: id}} -> id == target_id end)
       end)
 
-    to_graph(
+    Graph.get(
       (found_memories ++ linked_memories)
       |> Enum.uniq_by(fn %Memory{meta: %Meta{id: id}} -> id end),
-      found_memories |> get_links()
+      found_memories |> Link.get()
     )
   end
 
   defp execute(%{search: search}) do
-    all_memories = get_all_memories()
+    all_memories = Persist.get_all_memories()
 
     # TODO:
     # markdown to ast
@@ -67,19 +72,13 @@ defmodule Brain do
 
     found_memories =
       all_memories
-      |> Enum.filter(fn memory ->
-        memory
-        |> Memory.contains?(search)
-      end)
+      |> Memory.find(search)
 
     linked_memories =
-      found_memories
-      |> get_links()
-      |> Enum.map(fn %Link{target_id: target_id} ->
-        all_memories
-        |> Enum.find(fn %Memory{meta: %Meta{id: id}} -> id == target_id end)
-      end)
+      all_memories
+      |> Memory.get_linked_memories(found_memories)
 
+    # every memory, having a link to the found memory
     parent_memories =
       all_memories
       |> Enum.filter(fn possible_parent_memory ->
@@ -107,10 +106,10 @@ defmodule Brain do
 
     links =
       links_to_parent
-      |> Kernel.++(found_memories |> get_links())
+      |> Kernel.++(found_memories |> Link.get())
       |> Enum.uniq()
 
-    to_graph(
+    Graph.get(
       (parent_memories ++ found_memories ++ linked_memories)
       |> Enum.uniq_by(fn %Memory{meta: %Meta{id: id}} -> id end),
       links
@@ -126,84 +125,5 @@ defmodule Brain do
     --tag name
       find memories by tag
     """
-  end
-
-  defp to_graph(memories, links) do
-    dot_memories =
-      memories
-      |> Enum.map(fn %Memory{dot_node: dot} ->
-        dot
-      end)
-      |> Enum.join("\n")
-
-    dot_links =
-      links
-      |> Enum.map(fn %Link{dot: dot} ->
-        dot
-      end)
-      |> Enum.join("\n")
-
-    ~s(
-      graph {
-        node [fontname="helvetica" shape=none];
-        graph [fontname="helvetica"];
-        edge [fontname="helvetica"];
-
-        splines=curved;
-        style=filled;
-        K=1.5;
-
-        #{dot_links}
-
-        #{dot_memories}
-      }
-    )
-  end
-
-  defp get_all_memories() do
-    Application.get_env(:brain, :memory_paths, [])
-    |> Enum.map(fn memory_path ->
-      Path.join([memory_path |> Path.expand(), "*.md"])
-      |> Path.wildcard()
-      |> Enum.map(fn x ->
-        with {:ok, markdown} <- File.read(x),
-             {:ok, memory} <- Memory.get(markdown) do
-          {:ok, memory}
-        else
-          err ->
-            {:error, err}
-        end
-      end)
-      |> Enum.filter(fn x ->
-        case x do
-          {:ok, _memory} ->
-            true
-
-          err ->
-            Logger.warn("malformed memory found: #{inspect(err)}")
-            false
-        end
-      end)
-      |> Enum.map(fn {:ok, memory} ->
-        memory
-      end)
-    end)
-    |> List.flatten()
-  end
-
-  defp get_links(memories) do
-    memories
-    |> Enum.filter(fn %Memory{meta: %Meta{links: links}} ->
-      case links do
-        nil -> false
-        _ -> true
-      end
-    end)
-    |> Enum.map(fn %Memory{meta: %Meta{links: memory_links}} ->
-      memory_links
-    end)
-    |> List.flatten()
-    # |> Enum.uniq_by(fn %Link{target_id: id} -> id end)
-    |> Enum.uniq()
   end
 end

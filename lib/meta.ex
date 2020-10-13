@@ -3,6 +3,7 @@ defmodule Brain.Memory.Meta do
 
   alias Brain.Helper
   alias Brain.Link
+  alias Brain.Memory
 
   defstruct id: nil,
             title: nil,
@@ -26,13 +27,32 @@ defmodule Brain.Memory.Meta do
     )
   end
 
-  def get_dot_node(%Meta{id: id, title: title}) do
-    dot_title =
-      ~w(#{title})
-      |> Enum.chunk_every(3)
-      |> Enum.map(fn x -> Enum.join(x, " ") end)
-      |> Enum.join("<br align=\"center\" />")
+  def parse_metadata({"pre", [], [{"code", [{"class", ""}], raw_yaml_metadata}]}) do
+    case YamlElixir.read_from_string(raw_yaml_metadata) do
+      {:ok, raw_metadata} ->
+        {:ok,
+         %Memory{
+           meta: Meta.parse(raw_metadata)
+         }
+         |> get_dot_node()}
 
-    "#{Helper.get_id_for_dot(id)} [label=< #{dot_title} >];"
+      err ->
+        {:error,
+         "could not load metadata: #{inspect(err, pretty: true)}, #{
+           inspect(raw_yaml_metadata, pretty: true)
+         }"}
+    end
   end
+
+  defp get_dot_node(%Memory{meta: %Meta{id: id, title: title}} = memory),
+    do: %Memory{
+      memory
+      | dot_node:
+          "#{Helper.get_id_for_dot(id)} [label=< #{
+            ~w(#{title})
+            |> Enum.chunk_every(3)
+            |> Enum.map(fn x -> Enum.join(x, " ") end)
+            |> Enum.join("<br align=\"center\" />")
+          } >];"
+    }
 end

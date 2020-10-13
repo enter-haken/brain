@@ -17,13 +17,12 @@ defmodule Brain.Memory do
 
   def get(markdown) do
     with {:ok, [metadata | raw_ast_content], _errors} <- Earmark.as_ast(markdown),
-         {:ok, memory} <- parse_metadata(metadata) do
+         {:ok, memory} <- Meta.parse_metadata(metadata) do
       content =
         raw_ast_content
         |> Earmark.Transform.transform()
 
-      {:ok,
-       %Memory{memory | content: content, markdown: markdown, dot_node: get_dot_node(memory)}}
+      {:ok, %Memory{memory | content: content, markdown: markdown}}
     else
       err ->
         {:error, "could not create memory: #{inspect(err, pretty: true)}"}
@@ -61,22 +60,20 @@ defmodule Brain.Memory do
     end
   end
 
-  defp parse_metadata({"pre", [], [{"code", [{"class", ""}], raw_yaml_metadata}]}) do
-    case YamlElixir.read_from_string(raw_yaml_metadata) do
-      {:ok, raw_metadata} ->
-        {:ok,
-         %Memory{
-           meta: Meta.parse(raw_metadata)
-         }}
-
-      err ->
-        {:error,
-         "could not load metadata: #{inspect(err, pretty: true)}, #{
-           inspect(raw_yaml_metadata, pretty: true)
-         }"}
-    end
+  def find(memories, search_phrase) do
+    memories
+    |> Enum.filter(fn memory ->
+      memory
+      |> Memory.contains?(search_phrase)
+    end)
   end
 
-  defp get_dot_node(%Memory{meta: meta}),
-    do: Meta.get_dot_node(meta)
+  def get_linked_memories(memories, found_memories) do
+    found_memories
+    |> Link.get()
+    |> Enum.map(fn %Link{target_id: target_id} ->
+      memories
+      |> Enum.find(fn %Memory{meta: %Meta{id: id}} -> id == target_id end)
+    end)
+  end
 end
