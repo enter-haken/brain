@@ -6,6 +6,10 @@ defmodule Brain.Memory do
 
   require Logger
 
+  # TODO:
+  # * create pdfs from external links
+  #   * use headles chrome
+
   defstruct meta: nil,
             content: nil,
             markdown: nil,
