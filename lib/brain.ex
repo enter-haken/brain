@@ -96,7 +96,6 @@ defmodule Brain do
         parent_links
       end)
       |> List.flatten()
-      # |> Enum.uniq_by(fn %Link{id: id} -> id end)
       |> Enum.uniq()
       |> Enum.filter(fn %Link{target_id: linked_id} ->
         found_memories

@@ -30,12 +30,17 @@ defmodule Brain.Memory do
     end
   end
 
-  def contains?(%Memory{markdown: markdown}, search_phrase),
-    do:
-      String.contains?(
-        String.downcase(markdown),
-        search_phrase |> String.trim() |> String.downcase()
-      )
+  def contains?(%Memory{markdown: markdown}, search_phrase) do
+    search_phrase_word_list =
+      ~w(#{search_phrase})
+      |> Enum.map(fn x -> String.downcase(x) end)
+
+    raw_memory_word_list =
+      ~w(#{markdown})
+      |> Enum.map(fn x -> String.downcase(x) end)
+
+    length(raw_memory_word_list) != length(raw_memory_word_list -- search_phrase_word_list)
+  end
 
   def is_linked?(%Memory{meta: %{id: id}} = _child, %Memory{meta: %{links: links}} = _parent) do
     if(is_nil(links)) do
