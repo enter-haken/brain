@@ -15,7 +15,7 @@ install: compile
 
 .PHONY: uninstall
 uninstall:
-	mix escript.uninstall mgmtb_cli
+	mix escript.uninstall brain
 
 .PHONY: clean
 clean:
