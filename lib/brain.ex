@@ -15,7 +15,8 @@ defmodule Brain do
           search: :string,
           tag: :string,
           all: :boolean,
-          ast: :boolean
+          ast: :boolean,
+          json: :boolean
         ]
       )
 
@@ -114,6 +115,17 @@ defmodule Brain do
       |> Enum.uniq_by(fn %Memory{meta: %Meta{id: id}} -> id end),
       links
     )
+  end
+
+  defp execute(%{json: true}) do
+    case Persist.get_all_memories()
+         |> Poison.encode() do
+      {:ok, encoded} ->
+        encoded
+
+      _ ->
+        "could not encode json"
+    end
   end
 
   defp execute(_) do

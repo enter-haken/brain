@@ -24,7 +24,8 @@ defmodule Brain.MixProject do
     [
       {:earmark, "~> 1.4"},
       {:yaml_elixir, "~> 2.4"},
-      {:atomic_map, "~> 0.9.3"}
+      {:atomic_map, "~> 0.9.3"},
+      {:poison, "~> 3.1"}
     ]
   end
 end
