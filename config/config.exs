@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :brain,
-  memory_paths: ["~/src/enter-haken/memories/memories/"]
+  memory_paths: ["priv/memories"]
 
 config :logger,
   level: :debug
