@@ -165,7 +165,7 @@ You only get the `best connected` or the newest memories.
 
 ## Contact
 
-Jan Frederik Hake, <jan_hake@gmx.de>. [@enter_haken](https://twitter.com/enter_haken) on Twitter.
+[hake.one](https://hake.one). Jan Frederik Hake, <jan_hake@gmx.de>. [@enter_haken](https://twitter.com/enter_haken) on Twitter. [enter-haken#7260](https://discord.com) on discord.
 
 [all]: examples/all.png
 [sql]: examples/sql.png
